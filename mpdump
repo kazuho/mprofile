@@ -11,17 +11,35 @@ use Time::HiRes qw(sleep);
 my $dbi = 'DBI:mysql(mysql_enable_utf8=>1):database=mysql;user=root';
 my $samples = 1000;
 my $interval = 0.1;
+my $help;
 
 GetOptions(
     'dbi=s'      => \$dbi,
     'interval=f' => \$interval,
     'samples=i'  => \$samples,
+    help         => \$help,
 ) or exit 1;
+
+if ($help) {
+    print << "EOT";
+Usage: $0 options
+Options:
+    --dbi=       database URI (perl DBI style, default:
+                 "$dbi")
+    --interval=  interval between samples (default: 0.1sec)
+    --samples=   number of samples to take (default: 1000, infinite if set
+                 to 0)
+    --help       print this help
+
+EOT
+;
+    exit(0);
+}
 
 my $dbh = DBI->connect($dbi)
     or die DBI->errstr;
 
-for (my $i = 0; $i < $samples; $i++) {
+    for (my $i = 0; $i < $samples; $i++) {
     my $rows = $dbh->selectall_arrayref(
         'SHOW FULL PROCESSLIST',
         { Slice => {} },
