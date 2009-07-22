@@ -26,8 +26,8 @@ for (my $i = 0; $i < $samples; $i++) {
         'SHOW FULL PROCESSLIST',
         { Slice => {} },
     ) or die $dbh->errstr;
-    print to_json([
-        grep { $_->{Info} ne 'SHOW FULL PROCESSLIST' } @$rows
-    ]), "\n";
+    print to_json([ grep {
+        $_->{Command} eq 'Query' and $_->{Info} ne 'SHOW FULL PROCESSLIST'
+    } @$rows ]), "\n";
     sleep($interval);
 }
