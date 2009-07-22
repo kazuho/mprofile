@@ -1,0 +1,33 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+use DBI;
+use Getopt::Long;
+use IO::Handle;
+use JSON qw(to_json);
+use Time::HiRes qw(sleep);
+
+my $dbi = 'DBI:mysql:database=mysql;user=root';
+my $samples = 1000;
+my $interval = 0.05;
+
+GetOptions(
+    'dbi=s'      => \$dbi,
+    'interval=i' => \$interval,
+    'samples=i'  => \$samples,
+) or exit 1;
+
+my $dbh = DBI->connect($dbi)
+    or die DBI->errstr;
+
+for (my $i = 0; $i < $samples; $i++) {
+    my $rows = $dbh->selectall_arrayref(
+        'SHOW FULL PROCESSLIST',
+        { Slice => {} },
+    ) or die $dbh->errstr;
+    print to_json([
+        grep { $_->{Info} ne 'SHOW FULL PROCESSLIST' } @$rows
+    ]), "\n";
+    sleep($interval);
+}
