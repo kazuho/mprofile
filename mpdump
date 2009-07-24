@@ -8,16 +8,16 @@ use IO::Handle;
 use JSON qw(to_json);
 use Time::HiRes qw(sleep);
 
-my $dbi;
-my $user = 'root';
-my $password;
-my $host;
-my $port;
-my $mysql_socket;
+our $dbi;
+our $user = 'root';
+our $password;
+our $host;
+our $port;
+our $mysql_socket;
 
-my $samples = 1000;
-my $interval = 0.1;
-my $help;
+our $samples = 1000;
+our $interval = 0.1;
+our $help;
 
 GetOptions(
     'dbi=s'      => \$dbi,
@@ -59,9 +59,9 @@ EOT
 unless (defined $dbi) {
     $dbi = 'DBI:mysql(mysql_enable_utf8=>1):database=mysql';
     for my $n (qw/user password host port mysql_socket/) {
-	my $v = eval("\$$n");
-	$dbi .= ";$n=$v"
-	    if $v;
+	no strict qw(refs);
+	$dbi .= ";$n=$$n"
+	    if $$n;
     }
 }
 
