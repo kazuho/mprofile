@@ -68,7 +68,7 @@ unless (defined $dbi) {
 my $dbh = DBI->connect($dbi)
     or die DBI->errstr;
 
-    for (my $i = 0; $i < $samples; $i++) {
+for (my $i = 0; $i < $samples; $i++) {
     my $rows = $dbh->selectall_arrayref(
         'SHOW FULL PROCESSLIST',
         { Slice => {} },
