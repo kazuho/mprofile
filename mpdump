@@ -8,13 +8,24 @@ use IO::Handle;
 use JSON qw(to_json);
 use Time::HiRes qw(sleep);
 
-my $dbi = 'DBI:mysql(mysql_enable_utf8=>1):database=mysql;user=root';
+my $dbi;
+my $user = 'root';
+my $password;
+my $host;
+my $port;
+my $mysql_socket;
+
 my $samples = 1000;
 my $interval = 0.1;
 my $help;
 
 GetOptions(
     'dbi=s'      => \$dbi,
+    'user=s'     => \$user,
+    'password=s' => \$password,
+    'host=s'     => \$host,
+    'port=i'     => \$port,
+    'socket=s'   => \$mysql_socket,
     'interval=f' => \$interval,
     'samples=i'  => \$samples,
     help         => \$help,
@@ -22,18 +33,36 @@ GetOptions(
 
 if ($help) {
     print << "EOT";
-Usage: $0 options
+
+Usage:   $0 options
+
 Options:
-    --dbi=       database URI (perl DBI style, default:
-                 "$dbi")
+    --host=      address of MySQL server
+    --port=      port no. of MySQL server
+    --socket=    unix socket of MySQL server
+        (by default, connects to the server specified in my.cnf)
+
+    --user=      MySQL username (default: root)
+    --password=  MySQL password (default: no password)
+
     --interval=  interval between samples (default: 0.1sec)
     --samples=   number of samples to take (default: 1000, infinite if set
                  to 0)
+
     --help       print this help
 
 EOT
 ;
     exit(0);
+}
+
+unless (defined $dbi) {
+    $dbi = 'DBI:mysql(mysql_enable_utf8=>1):database=mysql';
+    for my $n (qw/user password host port mysql_socket/) {
+	my $v = eval("\$$n");
+	$dbi .= ";$n=$v"
+	    if $v;
+    }
 }
 
 my $dbh = DBI->connect($dbi)
